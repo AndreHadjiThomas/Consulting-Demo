@@ -1,0 +1,5 @@
+Polygon_A,Ecosystem_A,Start_Point,Polygon_B,Ecosystem_B,End_Point
+87,Broad‑leaved forest,"(np.float64(48.739238719512194), np.float64(2.2051337001784654))",89,Green urban areas,"(np.float64(48.73361284246575), np.float64(2.205155746742399))"
+76,Broad‑leaved forest,"(np.float64(48.775915), np.float64(2.154610487804878))",80,Broad‑leaved forest,"(np.float64(48.76976875), np.float64(2.152869207317073))"
+40,Broad‑leaved forest,"(np.float64(48.8682875), np.float64(2.152818292682927))",43,Broad‑leaved forest,"(np.float64(48.8603125), np.float64(2.1524109756097562))"
+57,Broad‑leaved forest,"(np.float64(48.8078625), np.float64(2.5464161862527717))",60,Broad‑leaved forest,"(np.float64(48.8033875), np.float64(2.551989024390244))"
