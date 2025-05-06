@@ -104,4 +104,4 @@ with right_col:
         [combined_density],
         ['Combined Density'],
         'Combined Density Evolution',
-        'Individuals per ha'
+        'Individuals per ha')
