@@ -112,8 +112,8 @@ with map_container:
             else: fill='green'
             folium.GeoJson(
                 r.geometry,
-                style_function=lambda feat, fill=fill:{{'fillColor':fill,'color':fill,'weight':1,'fillOpacity':0.6}},
-                highlight_function=lambda feat:{{'weight':3,'fillOpacity':0.8}},
+                style_function=lambda feat, fill=fill: {'fillColor': fill, 'color': fill, 'weight': 1, 'fillOpacity': 0.6},
+                highlight_function=lambda feat: {'weight': 3, 'fillOpacity': 0.8},
                 tooltip=name
             ).add_to(m)
         st_folium(m,width='100%',height=600)
