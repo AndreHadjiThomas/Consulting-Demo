@@ -33,10 +33,11 @@ if cols[3].button("Help"):       st.info("Feature coming soon")
 st.divider()
 
 # --- REGION SELECTION ---
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR   = Path(__file__).resolve().parent.parent
+data_folder   = BASE_DIR / "Biodiversity_brazil"
 regions = {
     'Brazilian Amazon': {
-        'data_folder': BASE_DIR / 'Biodiversity_brazil',
+        'data_folder': data_folder / 'Biodiversity_brazil',
         'geo_prefix':  'BrazilAmazon',
         'center':      [-3.5, -62.0],
         'zoom':        5
@@ -47,7 +48,7 @@ cfg = regions[selected]
 st.divider()
 
 # --- DATA CONFIG ---
-BASE_DIR = Path(__file__).resolve().parent
+BASE_DIR = Path(__file__).resolve().parent.parent
 # GeoJSON files for each year 2018-2023 (Brazil Amazon)
 years = list(range(2018, 2024))
 geojson_files = {year: BASE_DIR / f'BrazilAmazon_{year}.geojson' for year in years}
