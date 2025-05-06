@@ -46,29 +46,27 @@ selected = st.selectbox("Select Region", list(regions.keys()), key="region")
 cfg = regions[selected]
 st.divider()
 
-# --- DATA PREPARATION ---
+# --- DATA CONFIG ---
+BASE_DIR = Path(__file__).resolve().parent
+# GeoJSON files for each year 2018-2023 (Brazil Amazon)
 years = list(range(2018, 2024))
-files = {y: cfg['data_folder'] / f"{cfg['geo_prefix']}_{y}.geojson" for y in years}
-eco_codes = [1,2,3,4,5,6,7,8,9,10,11,14,15,16,17]
-labels = {
-    1:'Evergreen needleleaf',2:'Evergreen broadleaf',3:'Deciduous needleleaf',4:'Deciduous broadleaf',
-    5:'Mixed forest',6:'Wooded grassland',7:'Other wooded land',8:'Open shrubland',9:'Savanna',
-    10:'Grassland',11:'Wetlands',14:'Crop/veg mosaic',15:'Snow & ice',16:'Barren',17:'Water'
-}
+geojson_files = {year: BASE_DIR / f'BrazilAmazon_{year}.geojson' for year in years}
+# Ecosystem classes to represent
+ecosystem_codes = [1,2,3,4,5,6,7,8,9,10,11,14,15,16,17]
 
-# --- METRIC CALCULATIONS ---
-# Fractal Fragmentation Index (FFI)
-ffi = []
-for y in years:
-    path = files[y]
-    if path.exists():
-        gdf = gpd.read_file(path).to_crs(epsg=3857)
+# --- COMPUTE FFI FOR EACH YEAR ---
+ffi_values = []
+for year in years:
+    file_path = geojson_files[year]
+    if file_path.exists():
+        gdf = gpd.read_file(file_path).to_crs(epsg=3857)
         gdf['area'] = gdf.geometry.area
-        gdf['peri'] = gdf.geometry.length
-        gdf['FD'] = np.log(gdf['peri']) / np.log(gdf['area'])
-        ffi.append((2 - gdf['FD'].mean()).round(3))
+        gdf['perimeter'] = gdf.geometry.length
+        gdf['FD'] = np.log(gdf['perimeter']) / np.log(gdf['area'])
+        mean_FD = gdf['FD'].mean()
+        ffi_values.append(2 - mean_FD)
     else:
-        ffi.append(np.nan)
+        ffi_values.append(np.nan)
 
 # Species Richness (sample load)
 rich_file = BASE_DIR / 'Paris' / 'processed_species_iucn_gbif_results_center.csv'
