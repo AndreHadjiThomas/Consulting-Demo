@@ -33,11 +33,10 @@ if cols[3].button("Help"):       st.info("Feature coming soon")
 st.divider()
 
 # --- REGION SELECTION ---
-BASE_DIR   = Path(__file__).resolve().parent.parent
-data_folder   = BASE_DIR / "Biodiversity_brazil"
+BASE_DIR = Path(__file__).resolve().parent.parent
 regions = {
     'Brazilian Amazon': {
-        'data_folder': data_folder / 'Biodiversity_brazil',
+        'data_folder': BASE_DIR / 'Biodiversity_brazil',
         'geo_prefix':  'BrazilAmazon',
         'center':      [-3.5, -62.0],
         'zoom':        5
@@ -47,27 +46,29 @@ selected = st.selectbox("Select Region", list(regions.keys()), key="region")
 cfg = regions[selected]
 st.divider()
 
-# --- DATA CONFIG ---
-BASE_DIR = Path(__file__).resolve().parent.parent
-# GeoJSON files for each year 2018-2023 (Brazil Amazon)
+# --- DATA PREPARATION ---
 years = list(range(2018, 2024))
-geojson_files = {year: BASE_DIR / f'BrazilAmazon_{year}.geojson' for year in years}
-# Ecosystem classes to represent
-ecosystem_codes = [1,2,3,4,5,6,7,8,9,10,11,14,15,16,17]
+files = {y: cfg['data_folder'] / f"{cfg['geo_prefix']}_{y}.geojson" for y in years}
+eco_codes = [1,2,3,4,5,6,7,8,9,10,11,14,15,16,17]
+labels = {
+    1:'Evergreen needleleaf',2:'Evergreen broadleaf',3:'Deciduous needleleaf',4:'Deciduous broadleaf',
+    5:'Mixed forest',6:'Wooded grassland',7:'Other wooded land',8:'Open shrubland',9:'Savanna',
+    10:'Grassland',11:'Wetlands',14:'Crop/veg mosaic',15:'Snow & ice',16:'Barren',17:'Water'
+}
 
-# --- COMPUTE FFI FOR EACH YEAR ---
-ffi_values = []
-for year in years:
-    file_path = geojson_files[year]
-    if file_path.exists():
-        gdf = gpd.read_file(file_path).to_crs(epsg=3857)
+# --- METRIC CALCULATIONS ---
+# Fractal Fragmentation Index (FFI)
+ffi = []
+for y in years:
+    path = files[y]
+    if path.exists():
+        gdf = gpd.read_file(path).to_crs(epsg=3857)
         gdf['area'] = gdf.geometry.area
-        gdf['perimeter'] = gdf.geometry.length
-        gdf['FD'] = np.log(gdf['perimeter']) / np.log(gdf['area'])
-        mean_FD = gdf['FD'].mean()
-        ffi_values.append(2 - mean_FD)
+        gdf['peri'] = gdf.geometry.length
+        gdf['FD'] = np.log(gdf['peri']) / np.log(gdf['area'])
+        ffi.append((2 - gdf['FD'].mean()).round(3))
     else:
-        ffi_values.append(np.nan)
+        ffi.append(np.nan)
 
 # Species Richness (sample load)
 rich_file = BASE_DIR / 'Paris' / 'processed_species_iucn_gbif_results_center.csv'
@@ -85,7 +86,7 @@ map_col, graph_col = st.columns([3,1], gap="small")
 
 with map_col:
     st.subheader(f"2023 Ecosystem Map — {selected}")
-    path23 = geojson_files[2023]
+    path23 = files[2023]
     if path23.exists():
         lc = gpd.read_file(path23)
         lc['code'] = lc.get('LC_Class', lc.get('label')).astype(int)
@@ -100,20 +101,20 @@ with map_col:
                 highlight_function=lambda feat: {'weight':2,'fillOpacity':0.7},
                 tooltip=name
             ).add_to(m)
-        st_folium(m, width=600, height=900)
+        st_folium(m, width='100%', height=450)
     else:
         st.error(f"Missing GeoJSON: {path23}")
 
 with graph_col:
     st.subheader("Indicator Trends (2018–2023)")
-    dfm = pd.DataFrame({'Year':years,'FFI':ffi,'Richness':rich,'Density':density})
+    dfm = pd.DataFrame({'Year':years,'FFI':ffi_values,'Richness':rich,'Density':density})
     # Slim graphs stacked vertically
     fig1 = px.line(dfm, x='Year', y='FFI', markers=True, title='FFI')
-    st.plotly_chart(fig1, use_container_width=True, height=80)
+    st.plotly_chart(fig1, use_container_width=True, height=140)
     fig2 = px.line(dfm, x='Year', y='Richness', markers=True, title='Richness')
-    st.plotly_chart(fig2, use_container_width=True, height=80)
+    st.plotly_chart(fig2, use_container_width=True, height=140)
     fig3 = px.line(dfm, x='Year', y='Density', markers=True, title='Combined Density')
-    st.plotly_chart(fig3, use_container_width=True, height=80)
+    st.plotly_chart(fig3, use_container_width=True, height=140)
 
 # --- FOOTER ---
 st.divider()
