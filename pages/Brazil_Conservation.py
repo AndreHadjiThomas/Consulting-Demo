@@ -74,7 +74,7 @@ for y in years:
 rich_file = BASE_DIR / 'Paris' / 'processed_species_iucn_gbif_results_center.csv'
 if rich_file.exists():
     df_r = pd.read_csv(rich_file)
-    rich = [float(df_r.loc[df_r.Year==y, 'Richness'].iloc[0]) if y in df_r.Year.values else np.nan for y in years] y in df_r.Year.values else np.nan for y in years]
+    rich = [float(df_r.loc[df_r.Year==y,'Richness']) if y in df_r.Year.values else np.nan for y in years]
 else:
     rich = [np.nan]*len(years)
 
