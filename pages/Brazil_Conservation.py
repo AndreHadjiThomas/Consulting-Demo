@@ -16,29 +16,43 @@ data_folder   = BASE_DIR / "Biodiversity_brazil"
 # GeoJSON files for each year 2018-2023
 years = list(range(2018, 2024))
 geojson_files = {year: data_folder / f'BrazilAmazon_{year}.geojson' for year in years}
-
 # --- COMPUTE FFI FOR EACH YEAR ---
 ffi_values = []
 for year in years:
     file_path = geojson_files[year]
     if file_path.exists():
-        gdf = gpd.read_file(file_path)
-        # Project to metric CRS for accurate area/perimeter
-        gdf = gdf.to_crs(epsg=3857)
+        gdf = gpd.read_file(file_path).to_crs(epsg=3857)
         gdf['area'] = gdf.geometry.area
         gdf['perimeter'] = gdf.geometry.length
-        # Fractal dimension per patch
         gdf['FD'] = np.log(gdf['perimeter']) / np.log(gdf['area'])
         mean_FD = gdf['FD'].mean()
         ffi_values.append(2 - mean_FD)
     else:
         ffi_values.append(np.nan)
 
-# --- SAMPLE RICHNESS & DENSITY DATA ---
-# (Replace with real computations or data loading as needed)
-richness_values = [0.60, 0.63, 0.66, 0.70, 0.73, 0.75]
+# --- LOAD RICHNESS VALUES FROM PARIS FILE ---
+richness_file = BASE_DIR / 'Paris' / 'processed_species_iucn_gbif_results_center.csv'
+if richness_file.exists():
+    richness_df = pd.read_csv(richness_file)
+    richness_values = [
+        float(richness_df.loc[richness_df['Year']==year, 'Richness'].iloc[0])
+        if (richness_df['Year']==year).any() else np.nan
+        for year in years
+    ]
+else:
+    # fallback sample values
+    richness_values = [0.60, 0.63, 0.66, 0.70, 0.73, 0.75]
+
+# --- DENSITY METRICS & COMBINED DENSITY ---
+# sample density values (plants, animals, fungi)
 plant_density = [800, 850, 900, 950, 1000, 1050]
 animal_density = [50, 55, 60, 65, 70, 75]
+fungi_density = [100, 110, 120, 130, 140, 150]
+combined_density = (
+    np.array(plant_density) +
+    np.array(animal_density) +
+    np.array(fungi_density)
+).tolist()
 
 # --- LOAD 2023 LAND COVER ---
 lc_file_2023 = geojson_files[2023]
@@ -48,7 +62,7 @@ else:
     st.error(f"Land cover file not found: {lc_file_2023}")
     st.stop()
 
-# Utility: plot line charts
+# Utility to plot line charts
 def plot_line_chart(x, ys, labels, title, y_label):
     fig, ax = plt.subplots()
     for y, label in zip(ys, labels):
@@ -84,11 +98,10 @@ with right_col:
     st.markdown("**Species Richness (α/γ)**")
     plot_line_chart(years, [richness_values], ['Richness'], 'Richness Evolution', 'Richness')
 
-    st.markdown("**Plant & Animal Density**")
+    st.markdown("**Combined Plant, Animal & Fungi Density**")
     plot_line_chart(
         years,
-        [plant_density, animal_density],
-        ['Plant Density', 'Animal Density'],
-        'Density Evolution',
+        [combined_density],
+        ['Combined Density'],
+        'Combined Density Evolution',
         'Individuals per ha'
-    )
