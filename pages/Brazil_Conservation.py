@@ -84,7 +84,7 @@ map_col, graph_col = st.columns([3,1], gap="small")
 
 with map_col:
     st.subheader(f"2023 Ecosystem Map — {selected}")
-    path23 = files[2023]
+    path23 = geojson_files[2023]
     if path23.exists():
         lc = gpd.read_file(path23)
         lc['code'] = lc.get('LC_Class', lc.get('label')).astype(int)
