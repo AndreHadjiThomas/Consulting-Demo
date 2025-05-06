@@ -10,7 +10,6 @@ from streamlit_folium import st_folium
 # --- PAGE CONFIG ---
 st.set_page_config(
     page_title='Reforestation & Biodiversity Monitoring',
-    page_icon='🌳',
     layout='wide',
     initial_sidebar_state='collapsed'
 )
