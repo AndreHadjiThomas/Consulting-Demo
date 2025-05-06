@@ -26,13 +26,11 @@ st.markdown("""
 
 # --- TOP BAR & CONTROLS ---
 cols = st.columns([4, 1, 1, 1])
-cols[0].markdown("## 🌳 Reforestation & Biodiversity Platform")
+cols[0].markdown("## Reforestation & Biodiversity Platform")
 if cols[1].button("Add Region"): st.info("Feature coming soon")
 if cols[2].button("Settings"):   st.info("Feature coming soon")
 if cols[3].button("Help"):       st.info("Feature coming soon")
-st.divider()
 
-# --- REGION SELECTION ---
 BASE_DIR = Path(__file__).resolve().parent.parent
 regions = {
     'Brazilian Amazon': {
@@ -44,6 +42,10 @@ regions = {
 }
 selected = st.selectbox("Select Region", list(regions.keys()), key="region")
 cfg      = regions[selected]
+st.divider()
+
+# --- REGION SELECTION ---
+
 years    = list(range(2018, 2024))
 files    = {y: cfg['data_folder'] / f"{cfg['geo_prefix']}_{y}.geojson" for y in years}
 eco_codes = [1,2,3,4,5,6,7,8,9,10,11,14,15,16,17]
