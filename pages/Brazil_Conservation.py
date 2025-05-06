@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 import geopandas as gpd
 import folium
-import matplotlib.pyplot as plt
+import plotly.express as px
 from pathlib import Path
 from streamlit_folium import st_folium
 
