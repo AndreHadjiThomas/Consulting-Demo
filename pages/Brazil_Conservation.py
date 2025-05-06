@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -18,6 +19,26 @@ years = list(range(2018, 2024))
 geojson_files = {year: data_folder / f'BrazilAmazon_{year}.geojson' for year in years}
 # Ecosystem classes to represent
 ecosystem_codes = [1,2,3,4,5,6,7,8,9,10,11,14,15,16,17]
+# Mapping MODIS LC_Type1 codes to names
+land_use_classes = {
+    1: 'Evergreen needleleaf forest',
+    2: 'Evergreen broadleaf forest',
+    3: 'Deciduous needleleaf forest',
+    4: 'Deciduous broadleaf forest',
+    5: 'Mixed forest',
+    6: 'Wooded grassland',
+    7: 'Other wooded land',
+    8: 'Open shrubland',
+    9: 'Savanna',
+    10: 'Grassland',
+    11: 'Permanent wetlands',
+    12: 'Cropland',
+    13: 'Urban and built-up',
+    14: 'Cropland/natural vegetation mosaic',
+    15: 'Snow and ice',
+    16: 'Barren or sparsely vegetated',
+    17: 'Water'
+}
 
 # --- COMPUTE FFI FOR EACH YEAR ---
 ffi_values = []
@@ -46,7 +67,6 @@ else:
     richness_values = [np.nan] * len(years)
 
 # --- DENSITY METRICS & COMBINED DENSITY ---
-# sample density values (plants, animals, fungi)
 plant_density = [800, 850, 900, 950, 1000, 1050]
 animal_density = [50, 55, 60, 65, 70, 75]
 fungi_density  = [100, 110, 120, 130, 140, 150]
@@ -61,14 +81,14 @@ lc_file_2023 = geojson_files[2023]
 if not lc_file_2023.exists():
     st.error(f"Land cover file not found: {lc_file_2023}")
     st.stop()
+# Read and keep only ecosystem codes
 lc_gdf = gpd.read_file(lc_file_2023)
-# filter only ecosystem polygons
 if 'LC_Class' in lc_gdf.columns:
-    lc_gdf = lc_gdf[lc_gdf['LC_Class'].isin(ecosystem_codes)]
-elif 'label' in lc_gdf.columns:
-    lc_gdf = lc_gdf[lc_gdf['label'].isin(ecosystem_codes)]
-# project for mapping
-lc_gdf = lc_gdf.to_crs(epsg=4326)
+    eco_gdf = lc_gdf[lc_gdf['LC_Class'].isin(ecosystem_codes)]
+else:
+    eco_gdf = lc_gdf[lc_gdf['label'].astype(int).isin(ecosystem_codes)]
+# Project to WGS84
+eco_gdf = eco_gdf.to_crs(epsg=4326)
 
 # === LAYOUT ===
 left_col, right_col = st.columns([3, 1])
@@ -76,19 +96,25 @@ left_col, right_col = st.columns([3, 1])
 with left_col:
     st.subheader("2023 Ecosystem Polygons - Brazilian Amazon")
     m = folium.Map(location=[-3.5, -62.0], zoom_start=5, tiles='CartoDB positron')
-    for _, row in lc_gdf.iterrows():
+    for _, row in eco_gdf.iterrows():
+        code = row.get('LC_Class', row.get('label', None))
+        name = land_use_classes.get(int(code), f'Class {code}')
         folium.GeoJson(
             row.geometry,
-            style_function=lambda _, color='green': {
-                'fillColor': color,
-                'color': 'black', 'weight': 0.3, 'fillOpacity': 0.6
-            }
+            style_function=lambda feat: {
+                'fillColor': 'green',
+                'color': 'green',
+                'weight': 1,
+                'fillOpacity': 0.6
+            },
+            highlight_function=lambda feat: {'weight':3, 'fillOpacity':0.8},
+            tooltip=name
         ).add_to(m)
     st_folium(m, width=900, height=700)
 
 with right_col:
     st.subheader("Metric Trends (2018-2023)")
-
+    
     # FFI evolution
     ffi_df = pd.DataFrame({'Year': years, 'FFI': ffi_values})
     fig1 = px.line(ffi_df, x='Year', y='FFI', markers=True, title='FFI Evolution')
@@ -96,7 +122,11 @@ with right_col:
 
     # Richness evolution
     richness_df_plot = pd.DataFrame({'Year': years, 'Richness': richness_values})
-    fig2 = px.line(richness_df_plot, x='Year', y='Richness', markers=True, title='Richness Evolution', color_discrete_sequence=['#636EFA'])
+    fig2 = px.line(
+        richness_df_plot, x='Year', y='Richness',
+        markers=True, title='Richness Evolution',
+        color_discrete_sequence=['#636EFA']
+    )
     st.plotly_chart(fig2, use_container_width=True)
 
     # Combined density evolution
@@ -104,5 +134,10 @@ with right_col:
         'Year': years,
         'Combined Density': combined_density
     })
-    fig3 = px.line(density_df, x='Year', y='Combined Density', markers=True, title='Combined Plant, Animal & Fungi Density')
+    fig3 = px.line(
+        density_df, x='Year', y='Combined Density',
+        markers=True, title='Combined Plant, Animal & Fungi Density'
+    )
     st.plotly_chart(fig3, use_container_width=True)
+
+
