@@ -29,8 +29,7 @@ header_container = st.container()
 with header_container:
     st.markdown(
         "# Plateforme de Suivi Reforestation & Biodiversité  🌳\n"
-        "**Ministère de la Transition Écologique**  
-"
+        "**Ministère de la Transition Écologique**"
         "Suivi des indicateurs clés de l’Amazonie brésilienne pour l’allocation budgétaire"
     )
     st.divider()
