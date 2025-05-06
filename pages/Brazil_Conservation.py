@@ -101,7 +101,7 @@ with map_col:
                 highlight_function=lambda feat: {'weight':2,'fillOpacity':0.7},
                 tooltip=name
             ).add_to(m)
-        st_folium(m, width=450, height=600)
+        st_folium(m, width=600, height=900)
     else:
         st.error(f"Missing GeoJSON: {path23}")
 
@@ -110,11 +110,11 @@ with graph_col:
     dfm = pd.DataFrame({'Year':years,'FFI':ffi,'Richness':rich,'Density':density})
     # Slim graphs stacked vertically
     fig1 = px.line(dfm, x='Year', y='FFI', markers=True, title='FFI')
-    st.plotly_chart(fig1, use_container_width=True, height=100)
+    st.plotly_chart(fig1, use_container_width=True, height=80)
     fig2 = px.line(dfm, x='Year', y='Richness', markers=True, title='Richness')
-    st.plotly_chart(fig2, use_container_width=True, height=100)
+    st.plotly_chart(fig2, use_container_width=True, height=80)
     fig3 = px.line(dfm, x='Year', y='Density', markers=True, title='Combined Density')
-    st.plotly_chart(fig3, use_container_width=True, height=100)
+    st.plotly_chart(fig3, use_container_width=True, height=80)
 
 # --- FOOTER ---
 st.divider()
