@@ -74,7 +74,7 @@ for y in years:
 rich_file = BASE_DIR / 'Paris' / 'processed_species_iucn_gbif_results_center.csv'
 if rich_file.exists():
     df_r = pd.read_csv(rich_file)
-    rich = [float(df_r.loc[df_r.Year==y,'Richness']) if y in df_r.Year.values else np.nan for y in years]
+    rich = [float(df_r.loc[df_r.Year==y, 'Richness'].iloc[0]) if y in df_r.Year.values else np.nan for y in years] y in df_r.Year.values else np.nan for y in years]
 else:
     rich = [np.nan]*len(years)
 
@@ -107,7 +107,7 @@ with map_col:
 
 with graph_col:
     st.subheader("Indicator Trends (2018–2023)")
-    dfm = pd.DataFrame({'Year':years,'FFI':ffi_values,'Richness':rich,'Density':density})
+    dfm = pd.DataFrame({'Year': years, 'FFI': ffi, 'Richness': rich, 'Density': density})
     # Slim graphs stacked vertically
     fig1 = px.line(dfm, x='Year', y='FFI', markers=True, title='FFI')
     st.plotly_chart(fig1, use_container_width=True, height=140)
@@ -119,7 +119,6 @@ with graph_col:
 # --- FOOTER ---
 st.divider()
 st.markdown("© 2025 Biomet.life")
-
 
 
 
