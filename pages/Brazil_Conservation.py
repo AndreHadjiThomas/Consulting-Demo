@@ -54,7 +54,8 @@ prefix = region_cfg['geo_prefix']
 years = list(range(2018, 2024))
 geojson_files = {year: data_folder / f"{prefix}_{year}.geojson" for year in years}
 ecosystem_codes = [1,2,3,4,5,6,7,8,9,10,11,14,15,16,17]
-# MODIS land cover class labels\mland_use_classes = {
+# MODIS land cover class labels\m
+land_use_classes = {
     1: 'Evergreen needleleaf forest', 2: 'Evergreen broadleaf forest',
     3: 'Deciduous needleleaf forest', 4: 'Deciduous broadleaf forest',
     5: 'Mixed forest', 6: 'Wooded grassland', 7: 'Other wooded land',
