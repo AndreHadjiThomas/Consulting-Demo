@@ -9,38 +9,51 @@ from pathlib import Path
 from streamlit_folium import st_folium
 
 # --- PAGE CONFIG ---
-st.set_page_config(page_title='Reforestation Assessment Dashboard', layout='wide')
+st.set_page_config(
+    page_title='Plateforme de Suivi Reforestation & Biodiversité',
+    page_icon='🌳',
+    layout='wide',
+    initial_sidebar_state='collapsed'
+)
+# Hide Streamlit menu and footer for a cleaner look
+st.markdown("""
+    <style>
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+    </style>
+""", unsafe_allow_html=True)
+
+# --- HEADER ---
+header_container = st.container()
+with header_container:
+    st.markdown(
+        "# Plateforme de Suivi Reforestation & Biodiversité  🌳\n"
+        "**Ministère de la Transition Écologique**  
+"
+        "Suivi des indicateurs clés de l’Amazonie brésilienne pour l’allocation budgétaire"
+    )
+    st.divider()
 
 # --- DATA CONFIG ---
 BASE_DIR   = Path(__file__).resolve().parent.parent
 data_folder   = BASE_DIR / "Biodiversity_brazil"
-# GeoJSON files for each year 2018-2023
+# Years and files
 years = list(range(2018, 2024))
 geojson_files = {year: data_folder / f'BrazilAmazon_{year}.geojson' for year in years}
-# Ecosystem classes to represent
+# Ecosystem codes and labels
 ecosystem_codes = [1,2,3,4,5,6,7,8,9,10,11,14,15,16,17]
-# Mapping MODIS LC_Type1 codes to names
 land_use_classes = {
-    1: 'Evergreen needleleaf forest',
-    2: 'Evergreen broadleaf forest',
-    3: 'Deciduous needleleaf forest',
-    4: 'Deciduous broadleaf forest',
-    5: 'Mixed forest',
-    6: 'Wooded grassland',
-    7: 'Other wooded land',
-    8: 'Open shrubland',
-    9: 'Savanna',
-    10: 'Grassland',
-    11: 'Permanent wetlands',
-    12: 'Cropland',
-    13: 'Urban and built-up',
-    14: 'Cropland/natural vegetation mosaic',
-    15: 'Snow and ice',
-    16: 'Barren or sparsely vegetated',
-    17: 'Water'
+    1: 'Evergreen needleleaf forest', 2: 'Evergreen broadleaf forest',
+    3: 'Deciduous needleleaf forest', 4: 'Deciduous broadleaf forest',
+    5: 'Mixed forest', 6: 'Wooded grassland', 7: 'Other wooded land',
+    8: 'Open shrubland', 9: 'Savanna', 10: 'Grassland',
+    11: 'Permanent wetlands', 14: 'Cropland/natural vegetation mosaic',
+    15: 'Snow and ice', 16: 'Barren or sparsely vegetated', 17: 'Water'
 }
 
-# --- COMPUTE FFI FOR EACH YEAR ---
+# --- METRIC CALCULATIONS ---
+# FFI
 ffi_values = []
 for year in years:
     file_path = geojson_files[year]
@@ -49,95 +62,77 @@ for year in years:
         gdf['area'] = gdf.geometry.area
         gdf['perimeter'] = gdf.geometry.length
         gdf['FD'] = np.log(gdf['perimeter']) / np.log(gdf['area'])
-        mean_FD = gdf['FD'].mean()
-        ffi_values.append(2 - mean_FD)
+        ffi_values.append(2 - gdf['FD'].mean())
     else:
         ffi_values.append(np.nan)
-
-# --- LOAD RICHNESS VALUES FROM PARIS FILE ---
+# Richness
 richness_file = BASE_DIR / 'Paris' / 'processed_species_iucn_gbif_results_center.csv'
 if richness_file.exists():
-    richness_df = pd.read_csv(richness_file)
+    df_r = pd.read_csv(richness_file)
     richness_values = [
-        float(richness_df.loc[richness_df['Year']==year, 'Richness'].iloc[0])
-        if (richness_df['Year']==year).any() else np.nan
-        for year in years
+        float(df_r.loc[df_r['Year']==y, 'Richness'].iloc[0]) if y in df_r['Year'].values else np.nan
+        for y in years
     ]
 else:
-    richness_values = [np.nan] * len(years)
+    richness_values = [np.nan]*len(years)
+# Combined density (plants+animals+fungi)
+plant_density  = [800,850,900,950,1000,1050]
+animal_density = [50,55,60,65,70,75]
+fungi_density  = [100,110,120,130,140,150]
+combined_density = (np.array(plant_density)+np.array(animal_density)+np.array(fungi_density)).tolist()
 
-# --- DENSITY METRICS & COMBINED DENSITY ---
-plant_density = [800, 850, 900, 950, 1000, 1050]
-animal_density = [50, 55, 60, 65, 70, 75]
-fungi_density  = [100, 110, 120, 130, 140, 150]
-combined_density = (
-    np.array(plant_density) +
-    np.array(animal_density) +
-    np.array(fungi_density)
-).tolist()
+# --- LAYOUT: MAP & METRICS ---
+map_col, metrics_col = st.columns([3,1], gap='large')
 
-# --- LOAD & FILTER 2023 LAND COVER ---
-lc_file_2023 = geojson_files[2023]
-if not lc_file_2023.exists():
-    st.error(f"Land cover file not found: {lc_file_2023}")
-    st.stop()
-# Read and keep only ecosystem codes
-lc_gdf = gpd.read_file(lc_file_2023)
-if 'LC_Class' in lc_gdf.columns:
-    eco_gdf = lc_gdf[lc_gdf['LC_Class'].isin(ecosystem_codes)]
-else:
-    eco_gdf = lc_gdf[lc_gdf['label'].astype(int).isin(ecosystem_codes)]
-# Project to WGS84
-eco_gdf = eco_gdf.to_crs(epsg=4326)
+with map_col:
+    st.subheader("Carte des écosystèmes 2023 - Amazonie brésilienne")
+    # Load and filter 2023
+    lc_file_2023 = geojson_files[2023]
+    if not lc_file_2023.exists():
+        st.error(f"Fichier introuvable: {lc_file_2023}")
+    else:
+        lc = gpd.read_file(lc_file_2023)
+        lc['code'] = lc.get('LC_Class', lc.get('label')).astype(int)
+        eco = lc[lc['code'].isin(ecosystem_codes)].to_crs(epsg=4326)
+        m = folium.Map(location=[-3.5, -62.0], zoom_start=5, tiles='CartoDB positron')
+        # Add polygons
+        for _, row in eco.iterrows():
+            cls = row['code']; name = land_use_classes.get(cls,f"Class {cls}")
+            # color logic
+            if cls==17: fill='blue'
+            elif cls in [8,9]: fill='yellow'
+            else: fill='green'
+            folium.GeoJson(
+                row.geometry,
+                style_function=lambda f, fill=fill: {{'fillColor':fill,'color':fill,'weight':1,'fillOpacity':0.5}},
+                highlight_function=lambda f: {{'weight':3,'fillOpacity':0.8}},
+                tooltip=name
+            ).add_to(m)
+        st_folium(m, width= '100%', height=700)
 
-# === LAYOUT ===
-left_col, right_col = st.columns([3, 1])
-
-with left_col:
-    st.subheader("2023 Ecosystem Polygons - Brazilian Amazon")
-    m = folium.Map(location=[-3.5, -62.0], zoom_start=5, tiles='CartoDB positron')
-    for _, row in eco_gdf.iterrows():
-        code = row.get('LC_Class', row.get('label', None))
-        name = land_use_classes.get(int(code), f'Class {code}')
-        folium.GeoJson(
-            row.geometry,
-            style_function=lambda feat: {
-                'fillColor': 'green',
-                'color': 'green',
-                'weight': 1,
-                'fillOpacity': 0.6
-            },
-            highlight_function=lambda feat: {'weight':3, 'fillOpacity':0.8},
-            tooltip=name
-        ).add_to(m)
-    st_folium(m, width=900, height=700)
-
-with right_col:
-    st.subheader("Metric Trends (2018-2023)")
-    
-    # FFI evolution
-    ffi_df = pd.DataFrame({'Year': years, 'FFI': ffi_values})
-    fig1 = px.line(ffi_df, x='Year', y='FFI', markers=True, title='FFI Evolution')
-    st.plotly_chart(fig1, use_container_width=True)
-
-    # Richness evolution
-    richness_df_plot = pd.DataFrame({'Year': years, 'Richness': richness_values})
-    fig2 = px.line(
-        richness_df_plot, x='Year', y='Richness',
-        markers=True, title='Richness Evolution',
-        color_discrete_sequence=['#636EFA']
-    )
-    st.plotly_chart(fig2, use_container_width=True)
-
-    # Combined density evolution
-    density_df = pd.DataFrame({
+with metrics_col:
+    st.subheader("Évolution des indicateurs")
+    # Prepare DataFrame
+    df_metrics = pd.DataFrame({
         'Year': years,
-        'Combined Density': combined_density
+        'FFI': ffi_values,
+        'Richness': richness_values,
+        'Density': combined_density
     })
-    fig3 = px.line(
-        density_df, x='Year', y='Combined Density',
-        markers=True, title='Combined Plant, Animal & Fungi Density'
-    )
-    st.plotly_chart(fig3, use_container_width=True)
+    # FFI
+    fig_ffi = px.line(df_metrics, x='Year', y='FFI', markers=True, title='Indice de fragmentation (FFI)', color_discrete_sequence=['#238b45'])
+    st.plotly_chart(fig_ffi, use_container_width=True)
+    # Richness
+    fig_r = px.line(df_metrics, x='Year', y='Richness', markers=True, title='Richesse α/γ', color_discrete_sequence=['#2c7fb8'])
+    st.plotly_chart(fig_r, use_container_width=True)
+    # Density
+    fig_d = px.line(df_metrics, x='Year', y='Density', markers=True, title='Densité combinée (plantes+faune+champignons)', color_discrete_sequence=['#7f2704'])
+    st.plotly_chart(fig_d, use_container_width=True)
+
+# --- FOOTER ---
+st.divider()
+st.markdown("© 2025 Ministère de la Transition Écologique")
+
+
 
 
