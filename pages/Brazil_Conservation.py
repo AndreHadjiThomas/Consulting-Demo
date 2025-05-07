@@ -29,8 +29,6 @@ cols[0].markdown("## Reforestation & Biodiversity Platform")
 if cols[1].button("Add Region"): st.info("Feature coming soon")
 if cols[2].button("Settings"):   st.info("Feature coming soon")
 if cols[3].button("Help"):       st.info("Feature coming soon")
-st.divider()
-
 # --- REGION SELECTION ---
 BASE_DIR = Path(__file__).resolve().parent.parent
 regions = {
@@ -82,6 +80,14 @@ density = [950, 1020, 980, 1050, 970, 1010]
 
 # --- LAYOUT: MAP ON TOP LEFT ---
 top_cols = st.columns([3, 1], gap="small")
+st.markdown("#### Indicator Trends (2018–2023)", unsafe_allow_html=True)
+dfm = pd.DataFrame({'Year': years, 'FFI': ffi, 'Richness': rich, 'Density': density})
+graph_cols = st.columns(3, gap="small")
+metrics = ['FFI', 'Richness', 'Density']
+for idx, metric in enumerate(metrics):
+    fig = px.line(dfm, x='Year', y=metric, markers=True, title=metric)
+    graph_cols[idx].plotly_chart(fig, use_container_width=True, height=300)
+top_cols[1].empty()
 with top_cols[0]:
     st.subheader(f"2023 Ecosystem Map — {selected}")
     path23 = files[2023]
@@ -103,16 +109,8 @@ with top_cols[0]:
     else:
         st.error(f"Missing GeoJSON: {path23}")
 # Spacer column to keep layout
-top_cols[1].empty()
-
 # --- GRAPHS IMMEDIATELY BELOW MAP ---
-st.markdown("#### Indicator Trends (2018–2023)", unsafe_allow_html=True)
-dfm = pd.DataFrame({'Year': years, 'FFI': ffi, 'Richness': rich, 'Density': density})
-graph_cols = st.columns(3, gap="small")
-metrics = ['FFI', 'Richness', 'Density']
-for idx, metric in enumerate(metrics):
-    fig = px.line(dfm, x='Year', y=metric, markers=True, title=metric)
-    graph_cols[idx].plotly_chart(fig, use_container_width=True, height=300)
+
 
 # --- FOOTER ---
 st.divider()
