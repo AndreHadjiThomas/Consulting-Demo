@@ -14,11 +14,12 @@ st.set_page_config(
     layout='wide',
     initial_sidebar_state='collapsed'
 )
-# Minimal styling for professional look
+# Minimal styling for professional look and tighter headings
 st.markdown("""
     <style>
         #MainMenu, footer, header {visibility: hidden;}
         .block-container {padding: 0.5rem 1rem;}
+        .stMarkdown h4 {margin-top: 0.5rem; margin-bottom: 0.25rem;}
     </style>
 """, unsafe_allow_html=True)
 
@@ -63,7 +64,6 @@ for y in years:
         gdf = gpd.read_file(path).to_crs(epsg=3857)
         gdf['area'] = gdf.geometry.area
         gdf['peri'] = gdf.geometry.length
-        # Shape Index SI = P / (2 * sqrt(pi * A))
         gdf['SI'] = gdf['peri'] / (2 * np.sqrt(np.pi * gdf['area']))
         ffi.append(gdf['SI'].mean().round(3))
     else:
@@ -102,15 +102,12 @@ with top_cols[0]:
         st_folium(m, width='100%', height=400)
     else:
         st.error(f"Missing GeoJSON: {path23}")
-
-# Empty column for spacing
+# Spacer column to keep layout
 top_cols[1].empty()
 
-# --- GRAPHS BELOW MAP ---
-st.subheader("Indicator Trends (2018–2023)")
-# Prepare DataFrame
+# --- GRAPHS IMMEDIATELY BELOW MAP ---
+st.markdown("#### Indicator Trends (2018–2023)", unsafe_allow_html=True)
 dfm = pd.DataFrame({'Year': years, 'FFI': ffi, 'Richness': rich, 'Density': density})
-# Three columns for side-by-side display
 graph_cols = st.columns(3, gap="small")
 metrics = ['FFI', 'Richness', 'Density']
 for idx, metric in enumerate(metrics):
