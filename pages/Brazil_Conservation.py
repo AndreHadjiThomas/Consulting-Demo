@@ -14,13 +14,11 @@ st.set_page_config(
     layout='wide',
     initial_sidebar_state='collapsed'
 )
-# Hide default UI elements and reduce padding
+# Minimal styling for professional look
 st.markdown("""
     <style>
         #MainMenu, footer, header {visibility: hidden;}
-        .block-container {padding-top: 0.5rem;}
-        .stButton>button {font-size:0.8rem; padding:0.25rem 0.5rem;}
-        .css-1v3fvcr {font-size:1.25rem;}
+        .block-container {padding: 0.5rem 1rem;}
     </style>
 """, unsafe_allow_html=True)
 
@@ -57,7 +55,7 @@ labels = {
 }
 
 # --- METRIC CALCULATIONS ---
-# Fractal Fragmentation Index (FFI)
+# Fractal Fragmentation Index (FFI) based on shape index: perimeter/(2*sqrt(pi*area))
 ffi = []
 for y in years:
     path = files[y]
@@ -65,8 +63,9 @@ for y in years:
         gdf = gpd.read_file(path).to_crs(epsg=3857)
         gdf['area'] = gdf.geometry.area
         gdf['peri'] = gdf.geometry.length
-        gdf['FD'] = np.log(gdf['peri']) / np.log(gdf['area'])
-        ffi.append((2 - gdf['FD'].mean()).round(3))
+        # Shape Index SI = P / (2 * sqrt(pi * A))
+        gdf['SI'] = gdf['peri'] / (2 * np.sqrt(np.pi * gdf['area']))
+        ffi.append(gdf['SI'].mean().round(3))
     else:
         ffi.append(np.nan)
 
@@ -78,13 +77,12 @@ if rich_file.exists():
 else:
     rich = [np.nan]*len(years)
 
-# Combined Density (plants, animals, fungi) — fluctuating example
+# Combined Density (plants, animals, fungi)
 density = [950, 1020, 980, 1050, 970, 1010]
 
-# --- LAYOUT: MAP & GRAPH COLUMNS ---
-map_col, graph_col = st.columns([3,1], gap="small")
-
-with map_col:
+# --- LAYOUT: MAP ON TOP LEFT ---
+top_cols = st.columns([3, 1], gap="small")
+with top_cols[0]:
     st.subheader(f"2023 Ecosystem Map — {selected}")
     path23 = files[2023]
     if path23.exists():
@@ -101,20 +99,23 @@ with map_col:
                 highlight_function=lambda feat: {'weight':2,'fillOpacity':0.7},
                 tooltip=name
             ).add_to(m)
-        st_folium(m, width='100%', height=450)
+        st_folium(m, width='100%', height=400)
     else:
         st.error(f"Missing GeoJSON: {path23}")
 
-with graph_col:
-    st.subheader("Indicator Trends (2018–2023)")
-    dfm = pd.DataFrame({'Year': years, 'FFI': ffi, 'Richness': rich, 'Density': density})
-    # Slim graphs stacked vertically
-    fig1 = px.line(dfm, x='Year', y='FFI', markers=True, title='FFI')
-    st.plotly_chart(fig1, use_container_width=True, height=140)
-    fig2 = px.line(dfm, x='Year', y='Richness', markers=True, title='Richness')
-    st.plotly_chart(fig2, use_container_width=True, height=140)
-    fig3 = px.line(dfm, x='Year', y='Density', markers=True, title='Combined Density')
-    st.plotly_chart(fig3, use_container_width=True, height=140)
+# Empty column for spacing
+top_cols[1].empty()
+
+# --- GRAPHS BELOW MAP ---
+st.subheader("Indicator Trends (2018–2023)")
+# Prepare DataFrame
+dfm = pd.DataFrame({'Year': years, 'FFI': ffi, 'Richness': rich, 'Density': density})
+# Three columns for side-by-side display
+graph_cols = st.columns(3, gap="small")
+metrics = ['FFI', 'Richness', 'Density']
+for idx, metric in enumerate(metrics):
+    fig = px.line(dfm, x='Year', y=metric, markers=True, title=metric)
+    graph_cols[idx].plotly_chart(fig, use_container_width=True, height=300)
 
 # --- FOOTER ---
 st.divider()
