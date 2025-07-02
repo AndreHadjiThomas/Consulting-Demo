@@ -404,7 +404,7 @@ with right_col:
                     + "<br>".join(sorted(at_risk_species)) +
                     "</div>", unsafe_allow_html=True)
     with st.expander("Physical Environmental Risks", expanded=False):
-        fr_path = data_folder / "Fire_Readiness_2005_2024.csv"
+        fr_path = data_folder / "Fire_Readiness.csv"
         if fr_path.exists():
             # load and parse the date column
             df_fr = pd.read_csv(fr_path, parse_dates=['Date'])
