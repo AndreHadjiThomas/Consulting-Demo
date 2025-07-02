@@ -226,6 +226,32 @@ def build_map(show_richness, show_risks, show_landcover, show_kba_only= True):
                         except:
                             pass
                 folium.Marker(location=[y, x], icon=folium.Icon(color='darkred', icon='exclamation-sign'), popup=popup_html).add_to(m)
+    # -------------------------------------------------------------------
+    # Wind Turbine Layer (from KML)
+    # -------------------------------------------------------------------
+    try:
+        # adjust this path if needed
+        wind_kml = data_folder / 'MOH_Wind_map.kml'
+        wind_gdf = gpd.read_file(wind_kml, driver='KML')
+        folium.GeoJson(
+            wind_gdf,
+            name='Wind Turbines',
+            style_function=lambda feat: {
+                'color': 'black',
+                'fillColor': 'white',
+                'weight': 1,
+                'fillOpacity': 0.6
+            },
+            tooltip=folium.GeoJsonTooltip(fields=[wind_gdf.columns[0]] 
+                                          if len(wind_gdf.columns)>0 else None,
+                                          aliases=['Turbine'] )
+        ).add_to(m)
+    except Exception as e:
+        st.error(f"Could not load wind‐turbine KML: {e}")
+
+    # Finally add a layer control so the user can toggle Wind Turbines on/off
+    folium.LayerControl().add_to(m)
+    
     return m
 
 
