@@ -275,7 +275,6 @@ with left_col:
         st.markdown("<div style='max-height:180px;overflow-y:auto'>"
                     + "<br>".join(sorted(invasive_species)) +
                     "</div>", unsafe_allow_html=True)
-    with st.expander("Impactful Activities Growth & Thresholds", expanded=False):
 
 with center_col:
     st.subheader("Ecosystem Health")
