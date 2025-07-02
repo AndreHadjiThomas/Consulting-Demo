@@ -30,7 +30,7 @@ positions = [
 
 BASE_DIR   = Path(__file__).resolve().parent.parent  
 data_folder = BASE_DIR / "MOH"
-threshold_path = data_folder / 'Water and Air Quality Thresholds.xlsx'
+#threshold_path = data_folder / 'Water and Air Quality Thresholds.xlsx'
 richness_folder = data_folder
 risk_folder = data_folder
 landcover_file = data_folder / 'export_land_cover_polygons_Motor_oil_landcov_2018.geojson'
@@ -47,42 +47,42 @@ invasive_species_europe = [
 ]
 
 # --- THRESHOLD LOADING & EXCEEDANCE FUNCTIONS ---
-threshold_path = data_folder / 'Water and Air Quality Thresholds.xlsx'
-thresholds = pd.read_excel(threshold_path, sheet_name=None)
-ecosystem_water = thresholds['Ecosystem Water Quality']
-human_water    = thresholds['Human Water Quality ']
-epa_air        = thresholds['EPA Air Quality']
-who_air        = thresholds['WHO Air Quality']
+#threshold_path = data_folder / 'Water and Air Quality Thresholds.xlsx'
+#thresholds = pd.read_excel(threshold_path, sheet_name=None)
+#ecosystem_water = thresholds['Ecosystem Water Quality']
+#human_water    = thresholds['Human Water Quality ']
+#epa_air        = thresholds['EPA Air Quality']
+#who_air        = thresholds['WHO Air Quality']
 
-def clean_names(s: pd.Series) -> pd.Series:
-    return (
-        s.astype(str)
-         .str.replace('\xa0',' ', regex=False)
-         .str.replace('\xad','',  regex=False)
-         .str.strip()
-         .str.lower()
-    )
+# def clean_names(s: pd.Series) -> pd.Series:
+#     return (
+#         s.astype(str)
+#          .str.replace('\xa0',' ', regex=False)
+#          .str.replace('\xad','',  regex=False)
+#          .str.strip()
+#          .str.lower()
+#     )
 
-for df, col in [
-    (ecosystem_water, 'Pollutant (P = Priority Pollutant)'),
-    (human_water,    'Pollutant (P = Priority Pollutant)'),
-    (epa_air,        'Pollutant'),
-    (who_air,        'Pollutant'),
-]:
-    df['clean_pollutant'] = clean_names(df[col])
+# for df, col in [
+#     (ecosystem_water, 'Pollutant (P = Priority Pollutant)'),
+#     (human_water,    'Pollutant (P = Priority Pollutant)'),
+#     (epa_air,        'Pollutant'),
+#     (who_air,        'Pollutant'),
+# ]:
+#     df['clean_pollutant'] = clean_names(df[col])
 
-ecosystem_water['thr_num'] = pd.to_numeric(
-    ecosystem_water['Freshwater CCC (chronic, µg/L)'], errors='coerce'
-)
-human_water['thr_num']    = pd.to_numeric(
-    human_water['Freshwater CCC (chronic, µg/L)'], errors='coerce'
-)
-epa_air['thr_num'] = (
-    epa_air['Level'].astype(str).str.extract(r'(\d+\.?\d*)')[0].astype(float)
-)
-who_air['thr_num'] = (
-    who_air['2021 AQG Level'].astype(str).str.extract(r'(\d+\.?\d*)')[0].astype(float)
-)
+# ecosystem_water['thr_num'] = pd.to_numeric(
+#     ecosystem_water['Freshwater CCC (chronic, µg/L)'], errors='coerce'
+# )
+# human_water['thr_num']    = pd.to_numeric(
+#     human_water['Freshwater CCC (chronic, µg/L)'], errors='coerce'
+# )
+# epa_air['thr_num'] = (
+#     epa_air['Level'].astype(str).str.extract(r'(\d+\.?\d*)')[0].astype(float)
+# )
+# who_air['thr_num'] = (
+#     who_air['2021 AQG Level'].astype(str).str.extract(r'(\d+\.?\d*)')[0].astype(float)
+# )
 
 def check_exceedances(sites: dict, df: pd.DataFrame) -> pd.DataFrame:
     rows = []
@@ -101,42 +101,7 @@ def check_exceedances(sites: dict, df: pd.DataFrame) -> pd.DataFrame:
                     })
     return pd.DataFrame(rows)
 
-air_sites = {
-    "Ellesmere Port": {"Particle Pollution (PM₂.₅)":9.0, "Ozone (O₃)":55.0,
-                        "Nitrogen Dioxide (NO₂)":20.0, "Sulfur Dioxide (SO₂)":5.0,
-                        "Carbon Monoxide (CO)":0.3, "Lead (Pb)":0.05},
-    "Ince Marshes":   {"Particle Pollution (PM₂.₅)":10.0, "Ozone (O₃)":52.0,
-                        "Nitrogen Dioxide (NO₂)":18.0, "Sulfur Dioxide (SO₂)":6.0,
-                        "Carbon Monoxide (CO)":0.28, "Lead (Pb)":0.045},
-    "Runcorn East":   {"Particle Pollution (PM₂.₅)":8.0, "Ozone (O₃)":60.0,
-                        "Nitrogen Dioxide (NO₂)":22.0, "Sulfur Dioxide (SO₂)":6.5,
-                        "Carbon Monoxide (CO)":0.25, "Lead (Pb)":0.04},
-    "Chester Bus Interchange": {"Particle Pollution (PM₂.₅)":12.0,"Ozone (O₃)":48.0,
-                                 "Nitrogen Dioxide (NO₂)":30.0,"Sulfur Dioxide (SO₂)":10.0,
-                                 "Carbon Monoxide (CO)":0.4, "Lead (Pb)":0.06},
-    "Helsby":        {"Particle Pollution (PM₂.₅)":7.5, "Ozone (O₃)":50.0,
-                        "Nitrogen Dioxide (NO₂)":15.0, "Sulfur Dioxide (SO₂)":4.5,
-                        "Carbon Monoxide (CO)":0.22, "Lead (Pb)":0.03}
-}
 
-water_sites = {
-    "Mersey at Stanlow": {"Aldrin (P)":0.00002, "4,4'-DDT (P)":0.001,
-                            "Alkalinity":220.0, "Arsenic":1.0,
-                            "Mercury Methylmercury (P)":0.0005,
-                            "Copper (P)":10.0, "pH":7.2, "Ammonia":0.10},
-    "Mersey at Ince":   {"Aldrin (P)":0.00002, "4,4'-DDT (P)":0.001,
-                            "Alkalinity":200.0, "Arsenic":1.5,
-                            "Mercury Methylmercury (P)":0.0007,
-                            "Copper (P)":8.0, "pH":7.0, "Ammonia":0.12},
-    "Mersey at Runcorn":{"Aldrin (P)":0.00002, "4,4'-DDT (P)":0.0015,
-                            "Alkalinity":210.0, "Arsenic":2.0,
-                            "Mercury Methylmercury (P)":0.0006,
-                            "Copper (P)":12.0, "pH":7.4, "Ammonia":0.08},
-    "Mersey at Frodsham":{"Aldrin (P)":0.00002,"4,4'-DDT (P)":0.001,
-                            "Alkalinity":230.0,"Arsenic":1.2,
-                            "Mercury Methylmercury (P)":0.0004,
-                            "Copper (P)":9.0, "pH":7.3, "Ammonia":0.11}
-}
 
 def create_nine_centers(lat, lon, radius):
     earth_radius = 6378137
@@ -272,18 +237,6 @@ left_col, center_col, right_col = st.columns([2,3,2])
 
 with left_col:
     st.subheader("Pressures")
-    with st.expander("Global & Local Pressures", expanded=True):
-        pressure_md = """
-        - **Area of Land Use:** 1,900 acres (~770 ha)  
-        - **Freshwater Use:** 70,600 m³/day (≈25.8 M m³/year)  
-        - **Seabed Use:** 0 ha  
-        - **Noise Disturbance:** ~70 dBA at boundary; >90 dB inside plant  
-        - **GHG Emissions:** ~2 million t CO₂ / year  
-        - **Non‑GHG Pollutants:** NOₓ: 8,000 t/yr; PM₂.₅/₁₀: 500 t/yr; SO₂: 4,000 t/yr; VOCs: 12,000 t/yr  
-        - **Water Contaminants:** ~10 mg/L hydrocarbons → ~258 t/yr  
-        - **Solid Waste:** 5,000 t/yr
-        """
-        st.markdown(pressure_md)
     with st.expander("Invasive Species Detected", expanded=False):
         invasive_species = set()
         for pos in positions:
@@ -304,8 +257,8 @@ with left_col:
         if y2 <= y1:
             st.warning("Pick a later comparison year.")
         else:
-            file1 = data_folder / f"export_land_cover_polygons_Stanlow_ChangeNow_{y1}.geojson"
-            file2 = data_folder / f"export_land_cover_polygons_Stanlow_ChangeNow_{y2}.geojson"
+            file1 = data_folder / f"export_land_cover_polygons_Motor_oil_landcov_{y1}.geojson"
+            file2 = data_folder / f"export_land_cover_polygons_Motor_oil_landcov_{y2}.geojson"
             if file1.exists() and file2.exists():
                 gdf1, gdf2 = gpd.read_file(file1).to_crs(epsg=3857), gpd.read_file(file2).to_crs(epsg=3857)
                 for gdf in (gdf1,gdf2): gdf["area_ha"] = gdf.geometry.area/10_000
@@ -338,16 +291,6 @@ with left_col:
                 )
             else:
                 st.error(f"Missing GeoJSON for {y1} or {y2}.")
-        st.markdown("#### Threshold Exceedances")
-        air_ex = check_exceedances(air_sites, epa_air)
-        who_ex = check_exceedances(air_sites, who_air)
-        eco_ex = check_exceedances(water_sites, ecosystem_water)
-        hum_ex = check_exceedances(water_sites, human_water)
-        all_ex = pd.concat([air_ex, who_ex, eco_ex, hum_ex], ignore_index=True)
-        if not all_ex.empty:
-            st.dataframe(all_ex)
-        else:
-            st.write('No exceedances detected')
 
 with center_col:
     st.subheader("Ecosystem Health")
