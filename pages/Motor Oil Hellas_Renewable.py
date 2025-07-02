@@ -276,47 +276,6 @@ with left_col:
                     + "<br>".join(sorted(invasive_species)) +
                     "</div>", unsafe_allow_html=True)
     with st.expander("Impactful Activities Growth & Thresholds", expanded=False):
-        st.markdown("#### Impactful Activities Growth")
-        years_available = [1990,2000,2006,2012,2018]
-        y1 = st.selectbox("Baseline year", years_available, index=0, key="growth_y1")
-        y2 = st.selectbox("Comparison year", years_available, index=3, key="growth_y2")
-        if y2 <= y1:
-            st.warning("Pick a later comparison year.")
-        else:
-            file1 = data_folder / f"export_land_cover_polygons_Motor_oil_landcov_{y1}.geojson"
-            file2 = data_folder / f"export_land_cover_polygons_Motor_oil_landcov_{y2}.geojson"
-            if file1.exists() and file2.exists():
-                gdf1, gdf2 = gpd.read_file(file1).to_crs(epsg=3857), gpd.read_file(file2).to_crs(epsg=3857)
-                for gdf in (gdf1,gdf2): gdf["area_ha"] = gdf.geometry.area/10_000
-                def human_label(gdf):
-                    if "Class Name" in gdf.columns: return gdf["Class Name"]
-                    elif "label" in gdf.columns:
-                        return gdf["label"].astype(int).map(lambda c: land_cover_dict.get(c,f"Unknown ({c})"))
-                    else:
-                        st.warning("No 'Class Name' or 'label' in land‐cover data.")
-                        return pd.Series(["Unknown"]*len(gdf), index=gdf.index)
-                keywords = ["Refinery","Petrochemical","Industrial","Port","Airport",
-                            "Landfill","Factory","Mining","Construction","Military"]
-                def filter_imp(gdf):
-                    names = human_label(gdf).str.lower()
-                    mask = names.str.contains("|".join(kw.lower() for kw in keywords), na=False)
-                    out = gdf[mask].copy(); out["Activity"] = human_label(gdf)[mask].values
-                    return out
-                imp1, imp2 = filter_imp(gdf1), filter_imp(gdf2)
-                sum1 = imp1.groupby("Activity")["area_ha"].sum().rename(f"{y1} ha")
-                sum2 = imp2.groupby("Activity")["area_ha"].sum().rename(f"{y2} ha")
-                dfg = pd.concat([sum1,sum2],axis=1).fillna(0)
-                dfg["Growth (ha)"] = dfg[f"{y2} ha"] - dfg[f"{y1} ha"]
-                dfg["% change"] = (dfg["Growth (ha)"]/dfg[f"{y1} ha"].replace(0,np.nan)*100).fillna(0)
-                dfg = dfg.reset_index().rename(columns={"index":"Activity"})
-                dfg = dfg[dfg["Activity"].str.lower()!="sport and leisure"]
-                st.dataframe(
-                    dfg.style.format({f"{y1} ha":"{:.1f}", f"{y2} ha":"{:.1f}",
-                                      "Growth (ha)":"{:.1f}","% change":"{:+.1f}%"}),
-                    height=250
-                )
-            else:
-                st.error(f"Missing GeoJSON for {y1} or {y2}.")
 
 with center_col:
     st.subheader("Ecosystem Health")
