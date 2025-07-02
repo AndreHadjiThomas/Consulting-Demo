@@ -276,7 +276,9 @@ with left_col:
                     + "<br>".join(sorted(invasive_species)) +
                     "</div>", unsafe_allow_html=True)
     with st.expander("Impactful Activities", expanded=False):
-        a= 0
+        # put at least one Streamlit call so the expander renders
+        st.write("")  # or you can replace with a placeholder message
+        
 with center_col:
     st.subheader("Ecosystem Health")
     with st.expander("Map & Layer Controls", expanded=True):
