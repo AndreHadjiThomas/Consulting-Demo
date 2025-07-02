@@ -417,7 +417,7 @@ with right_col:
         else:
             st.warning("water_risk_details.csv not found.")
     with st.expander("Download Full Report", expanded=False):
-        report_path = data_folder / 'biodiversity_impact_report_101-5.docx'
+        report_path = data_folder / 'MOH_biodiversity_impact_report.docx'
         if report_path.exists():
             with open(report_path, 'rb') as f:
                 report_bytes = f.read()
