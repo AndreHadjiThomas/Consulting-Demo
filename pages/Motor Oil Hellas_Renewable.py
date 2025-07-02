@@ -277,7 +277,7 @@ with left_col:
                     "</div>", unsafe_allow_html=True)
     with st.expander("Impactful Activities Growth & Thresholds", expanded=False):
         st.markdown("#### Impactful Activities Growth")
-        years_available = [2001,2007,2012,2018]
+        years_available = [1990,2000,2006,2012,2018]
         y1 = st.selectbox("Baseline year", years_available, index=0, key="growth_y1")
         y2 = st.selectbox("Comparison year", years_available, index=3, key="growth_y2")
         if y2 <= y1:
