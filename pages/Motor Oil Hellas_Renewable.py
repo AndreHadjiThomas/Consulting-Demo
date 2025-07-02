@@ -404,7 +404,7 @@ with right_col:
                     + "<br>".join(sorted(at_risk_species)) +
                     "</div>", unsafe_allow_html=True)
     with st.expander("Physical Environmental Risks", expanded=False):
-        fr_path = data_folder / "Fire_Readiness.csv"
+        fr_path = data_folder / "Fire_Readiness_2005_2024.csv"
         if fr_path.exists():
             # load and parse the date column
             df_fr = pd.read_csv(fr_path, parse_dates=['Date'])
@@ -420,12 +420,13 @@ with right_col:
                 x='Date',
                 y='Readiness',
                 color='Region',
-                title='Monthly Fire Readiness (2005–2024)'
+                title='Monthly Fire Readiness'
             )
             fig.update_layout(height=350)
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.warning("Fire readiness data not found.")
+
 
     with st.expander("Download Full Report", expanded=False):
         report_path = data_folder / 'MOH_biodiversity_impact_report.docx'
