@@ -404,18 +404,29 @@ with right_col:
                     + "<br>".join(sorted(at_risk_species)) +
                     "</div>", unsafe_allow_html=True)
     with st.expander("Physical Environmental Risks", expanded=False):
-        water_csv = data_folder / "water_risk_details.csv"
-        if water_csv.exists():
-            try:
-                df_water = pd.read_csv(water_csv)
-                if not df_water.empty:
-                    st.dataframe(df_water)
-                else:
-                    st.write("No high‑risk water entries.")
-            except Exception as e:
-                st.error(f"Error loading: {e}")
+        fr_path = data_folder / "Fire_Readiness_2005_2024.csv"
+        if fr_path.exists():
+            # load and parse the date column
+            df_fr = pd.read_csv(fr_path, parse_dates=['Date'])
+            # melt so each region becomes a series
+            df_long = df_fr.melt(
+                id_vars='Date',
+                var_name='Region',
+                value_name='Readiness'
+            )
+            # line plot
+            fig = px.line(
+                df_long,
+                x='Date',
+                y='Readiness',
+                color='Region',
+                title='Monthly Fire Readiness (2005–2024)'
+            )
+            fig.update_layout(height=350)
+            st.plotly_chart(fig, use_container_width=True)
         else:
-            st.warning("water_risk_details.csv not found.")
+            st.warning("Fire readiness data not found.")
+
     with st.expander("Download Full Report", expanded=False):
         report_path = data_folder / 'MOH_biodiversity_impact_report.docx'
         if report_path.exists():
