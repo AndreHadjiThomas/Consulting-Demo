@@ -16,7 +16,7 @@ from docx import Document
 import io, base64
 
 
-st.set_page_config(page_title="Stanlow Risk Viewer", layout="wide")
+st.set_page_config(page_title="Wind-Farm Risk Viewer", layout="wide")
 
 # === USER CONFIG ===
 latitude = 37.75
@@ -256,8 +256,8 @@ def build_map(show_richness, show_risks, show_landcover, show_kba_only= True):
 
 
 # === PAGE LAYOUT ===
-st.title("Stanlow Biodiversity & Environmental Risk Viewer")
-st.markdown("This dashboard visualizes biodiversity richness, land cover, and environmental risks around the Stanlow Refinery.")
+st.title("Wind-Farm Biodiversity & Environmental Risk Viewer")
+st.markdown("This dashboard visualizes biodiversity richness, land cover, and environmental risks around the potential Wind-Farm Project.")
 
 left_col, center_col, right_col = st.columns([2,3,2])
 
