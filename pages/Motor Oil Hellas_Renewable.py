@@ -29,11 +29,11 @@ positions = [
 ]
 
 BASE_DIR   = Path(__file__).resolve().parent.parent  
-data_folder = BASE_DIR / "stanlow area risk"
+data_folder = BASE_DIR / "MOH"
 threshold_path = data_folder / 'Water and Air Quality Thresholds.xlsx'
 richness_folder = data_folder
 risk_folder = data_folder
-landcover_file = data_folder / 'export_land_cover_polygons_Stanlow_ChangeNow_2018.geojson'
+landcover_file = data_folder / 'export_land_cover_polygons_Motor_oil_landcov_2018.geojson'
 
 # === Confirmed Invasive Species in Europe ===
 invasive_species_europe = [
