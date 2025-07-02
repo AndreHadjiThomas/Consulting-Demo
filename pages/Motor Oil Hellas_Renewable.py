@@ -19,8 +19,8 @@ import io, base64
 st.set_page_config(page_title="Stanlow Risk Viewer", layout="wide")
 
 # === USER CONFIG ===
-latitude = 53.2822
-longitude = -2.8623
+latitude = 37.75
+longitude = 22.25
 radius_m = 5000
 positions = [
     "top_left", "top_center", "top_right",
