@@ -275,10 +275,26 @@ with left_col:
         st.markdown("<div style='max-height:180px;overflow-y:auto'>"
                     + "<br>".join(sorted(invasive_species)) +
                     "</div>", unsafe_allow_html=True)
-    with st.expander("Impactful Activities", expanded=False):
+    with st.expander("Area of Water and Land Use", expanded=False):
         # put at least one Streamlit call so the expander renders
         st.write("")  # or you can replace with a placeholder message
-        
+
+    with st.expander("Light and Noise Disturbance", expanded=False):
+        # put at least one Streamlit call so the expander renders
+        st.write("")  # or you can replace with a placeholder message
+    with st.expander("Release of Solid Waste", expanded=False):
+        # put at least one Streamlit call so the expander renders
+        st.write("")  # or you can replace with a placeholder message
+    with st.expander("Resource Extraction", expanded=False):
+        # put at least one Streamlit call so the expander renders
+        st.write("")  # or you can replace with a placeholder message
+    with st.expander("Air Soil and Water Pollution", expanded=False):
+        # put at least one Streamlit call so the expander renders
+        st.write("")  # or you can replace with a placeholder message
+    with st.expander("Impactful Activities Evolution", expanded=False):
+        # put at least one Streamlit call so the expander renders
+        st.write("")  # or you can replace with a placeholder message
+
 with center_col:
     st.subheader("Ecosystem Health")
     with st.expander("Map & Layer Controls", expanded=True):
