@@ -401,8 +401,15 @@ with right_col:
             )
             fig.update_layout(height=350)
             st.plotly_chart(fig, use_container_width=True)
+            # Below the chart, show other risk categories in bold
+            st.markdown(
+                "**Drought**   |   **Flooding**   |   **Landslide**   |   **Water Quality Risks**"
+            )
         else:
             st.warning("Fire readiness data not found.")
+
+    
+
 
 
     with st.expander("Download Full Report", expanded=False):
