@@ -21,7 +21,7 @@ st.set_page_config(page_title="Wind-Farm Risk Viewer", layout="wide")
 # === USER CONFIG ===
 latitude = 37.75
 longitude = 22.25
-radius_m = 5000
+radius_m = 7000
 positions = [
     "top_left", "top_center", "top_right",
     "left_center", "center", "right_center",
