@@ -202,30 +202,66 @@ def build_map(show_richness, show_risks, show_landcover, show_kba_only= True):
 
     # Environmental risks
     if show_risks:
-        for pos, (lat, lon) in zip(positions, centers):
-            csv_path = risk_folder / f"environmental_risks_{pos}.csv"
-            if not csv_path.exists(): continue
-            df_risk = pd.read_csv(csv_path)
-            for _, r in df_risk.iterrows():
-                coords = r.get('Coordinates')
-                if pd.isnull(coords) or coords=='None': continue
-                popup_html = f"<div style='font-size:12px;max-width:300px'><b>Region:</b> {r.get('Region Name','Unknown')}<br><b>Risk Info:</b> {r.get('Type of Protected Area','N/A')}</div>"
-                try:
-                    y, x = ast.literal_eval(coords)
-                except:
+            for pos, (lat, lon) in zip(positions, centers):
+                csv_path = risk_folder / f"environmental_risks_{pos}.csv"
+                if not csv_path.exists():
                     continue
-                if show_kba_only and r.get('Type of Protected Area')!='KBA':
-                    continue
-                if r.get('Type of Protected Area')=='KBA':
-                    poly = r.get('Polygon')
-                    if isinstance(poly, str) and poly!='N/A':
-                        try:
-                            geom = shapely.geometry.shape(ast.literal_eval(poly))
-                            folium.GeoJson(data=geom.__geo_interface__, style_function=lambda feat: {"fillColor":"blue","color":"black","weight":1,"fillOpacity":0.3}, tooltip=popup_html).add_to(m)
-                            continue
-                        except:
-                            pass
-                folium.Marker(location=[y, x], icon=folium.Icon(color='darkred', icon='exclamation-sign'), popup=popup_html).add_to(m)
+    
+                df_risk = pd.read_csv(csv_path)
+                for _, r in df_risk.iterrows():
+                    coords = r.get('Coordinates')
+                    if pd.isnull(coords) or coords == 'None':
+                        continue
+    
+                    # Common popup for all types
+                    area_type = r.get('Type of Protected Area', 'Unknown')
+                    region_name = r.get('Region Name','Unknown')
+                    popup_html = (
+                        f"<div style='font-size:12px;max-width:300px'>"
+                        f"<b>Region:</b> {region_name}<br>"
+                        f"<b>Area Type:</b> {area_type}</div>"
+                    )
+    
+                    # Parse location
+                    try:
+                        y, x = ast.literal_eval(coords)
+                    except Exception:
+                        continue
+    
+                    if area_type == 'KBA':
+                        # Draw the full polygon if available
+                        poly = r.get('Polygon')
+                        if isinstance(poly, str) and poly != 'N/A':
+                            try:
+                                geom = shapely.geometry.shape(ast.literal_eval(poly))
+                                folium.GeoJson(
+                                    data=geom.__geo_interface__,
+                                    style_function=lambda feat: {
+                                        "fillColor":"blue",
+                                        "color":"black",
+                                        "weight":1,
+                                        "fillOpacity":0.3
+                                    },
+                                    tooltip=popup_html
+                                ).add_to(m)
+                                continue
+                            except Exception:
+                                pass
+    
+                        # Fallback marker if polygon fails
+                        folium.Marker(
+                            location=[y, x],
+                            icon=folium.Icon(color='blue', icon='info-sign'),
+                            popup=popup_html
+                        ).add_to(m)
+                    else:
+                        # Non-KBA protected area: show as red marker
+                        folium.Marker(
+                            location=[y, x],
+                            icon=folium.Icon(color='red', icon='exclamation-sign'),
+                            popup=popup_html
+                        ).add_to(m)
+            
     # -------------------------------------------------------------------
     # Wind Turbine Layer (from KML)
     # -------------------------------------------------------------------
