@@ -209,7 +209,7 @@ def build_map(show_richness, show_risks, show_landcover, show_kba_only= True):
             for _, r in df_risk.iterrows():
                 coords = r.get('Coordinates')
                 if pd.isnull(coords) or coords=='None': continue
-                popup_html = f"<div style='font-size:12px;max-width:300px'><b>Region:</b> {r.get('Region Name','Unknown')}<br><b>Risk Info:</b> {r.get('Water Risk Details','N/A')}</div>"
+                popup_html = f"<div style='font-size:12px;max-width:300px'><b>Region:</b> {r.get('Region Name','Unknown')}<br><b>Risk Info:</b> {r.get('Type of Protected Area','N/A')}</div>"
                 try:
                     y, x = ast.literal_eval(coords)
                 except:
